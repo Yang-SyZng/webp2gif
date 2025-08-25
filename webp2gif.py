@@ -1,11 +1,35 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 import imageio
 import webp
-from glob import glob
-from multiprocessing import Pool
+import requests
+import time
 
+def download_file(url: str, save_dir: str = "."):
+    try:
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}.webp"
+        save_path = os.path.join(save_dir, filename)
+        
+        # send GET request
+        response = requests.get(url, stream=True, timeout=15)
+        response.raise_for_status()  # ensure success
+
+        # write file in binary
+        with open(save_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        print(f"done: {save_path}")
+        return save_path
+    
+    except Exception as e:
+        print(f"wrong: {e}")
+        return None
+    
 def convert_webp2gif(src_webp):
     try:
         with open(src_webp, 'rb') as src_f:
@@ -29,23 +53,13 @@ def convert_webp2gif(src_webp):
         return -1
     return 0
 
-
-
 if sys.stderr.isatty():
     ERR_RED = '\033[0;31m'
 else:
     ERR_RED = '\033[0m'
-
-srclist=[]
-for arg in sys.argv[1:]:
-    if arg.endswith('.webp'):
-        srclist.append(arg)
-    else:
-        print(f"{ERR_RED}argument error!: {arg}", file=sys.stderr)
-        print(f"{ERR_RED}usage: webp2gif.py FILE1.webp FILE2.webp ...", file=sys.stderr)
-        print(f"{ERR_RED}or", file=sys.stderr)
-        print(f"{ERR_RED}       webp2gif.py */*.webp ...", file=sys.stderr)
-        sys.exit(0)
-
-with Pool(4) as p:
-    p.map(convert_webp2gif, srclist)
+    
+if __name__ == '__main__':
+    url = "https://p26-im-emoticon-sign.byteimg.com/tos-cn-o-0812/oEymDfucyEcDQJf1QAogFCp0IGxnAAb2EAzAX9~tplv-0wx4r9yasq-awebp-resize:0:0.awebp?biz_tag=aweme_im&lk3s=91c5b7cb&s=im_123&sc=emotion&x-expires=1787626185&x-signature=nwmYEpZ9b23LeOa4EawoIvlXhbs%3D"
+    source_path = "" # source webp file path
+    source_path = download_file(url)
+    convert_webp2gif(source_path)
