@@ -4,7 +4,7 @@
 
 You can use the URL to download the web and convert it to gif at the same time, or you can convert the local file directly to gif
 
-Dependent packages: webp, imageio, requests
+Dependent packages: requests
 
-use python3 -m pip install webp imageio requests
+use python3 -m pip install requests
 
